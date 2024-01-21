@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  questoes:
+    container_name: questoes
+    build:
+      context: .
+    volumes:
+      - ~/.ssh/:/root/.ssh/
+      - ./:/var/www
+    restart: on-failure
+    tty: true
