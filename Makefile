@@ -10,7 +10,7 @@ YELLOW=\033[0;33m
 # funação para criar o arquivo de env
 define create_env
 	@echo "${YELLOW}criando arquivo de env 🏂${NC}"
-	@cat devtools/envs/dev/env.txt > .env
+	@cat devtools/envs/dev.txt > .env
 	@echo "${GREEN}Variaveis setadas! 👌${NC}"
 endef
 
@@ -38,6 +38,23 @@ env:
 	@clear
 	$(call create_env)
 
+clear:
+	@clear
+	$(call clean)
+
 build:
 	@clear
 	@./scripts/build.sh
+
+up:
+	@clear
+	@cd docker && docker-compose up -d
+
+down:
+	@clear
+	@cd docker && docker-compose down
+
+freeze:
+	@clear
+	@pipenv requirements --dev > devtools/requirements/dev.txt
+

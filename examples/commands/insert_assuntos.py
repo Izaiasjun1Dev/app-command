@@ -2,19 +2,26 @@ import time
 from gspl.console.app import app
 from gspl.console.commands.command import BaseCommand
 
+logger = BaseCommand.logger
 
 class Command(BaseCommand):
-     
+        
     def execute(self):
-        app.logger.info("Executando o comando")
-        self.get_data()
-        self.processa_dados()
-        app.logger.info("Comando executado")
-        
-    def get_data(self):
-        app.logger.info("Obtendo os dados")
-        
-       
-    def processa_dados(self):
-        app.logger.info("Processando os dados")
+        try:
+            self.logger.info("Teste")
+            self.logger.info("Teste2")
+            # index_name = 'teste'
+            # index_body = {
+            # 'settings': {
+            #     'index': {
+            #         'number_of_shards': 4
+            #     }
+            # }
+            # }
+            # self.open_elastic.indices.create(
+            #     index_name, body=index_body
+            # )
+        except Exception as e:
+            self.logger.error(e)
+            raise e
         

@@ -1,11 +1,18 @@
 
+from typing import List
 import typer
 from colorama import Fore, Style
 from gspl.config.cli_config import config
-from gspl.console.commands import cmd
-from gspl.console.application import Application
+from gspl.console.commands.cmd import (
+    exec_command,
+    available_commands,
+    process_multiple_arguments,
+    start_new_project,
+)
 
-        
+from typing_extensions import Annotated
+from gspl.console.commands.application import Application
+
 app = Application()
 
 @app.command()
@@ -16,35 +23,73 @@ def version():
     typer.echo(
         f"{Fore.GREEN}{config.name}{Style.RESET_ALL} {Fore.BLUE}{config.version}{Style.RESET_ALL}"
     )
-    
-@app.command()
-def commands():
+
+
+@app.command(
+    name="start-project",
+)
+def start_project(
+    path: str = typer.Option(
+        "./",
+        prompt="Caminho onde o projeto vai ficar",
+        help="Caminho para o novo projeto",
+        show_default=True,
+    ),
+    name: str = typer.Option(
+        "commands",
+        prompt="Nome do projeto",
+        help="Nome do projeto",
+        show_default=True,
+    ),
+    description: str = typer.Option(
+        "Novo projeto",
+        prompt="Descrição do projeto",
+        help="Descrição do projeto",
+        show_default=True,
+    )
+):
     """
-    Lista os comandos disponíveis
+    Cria um novo projeto
     """
-    typer.echo(f"{Fore.CYAN}Comandos disponíveis{Style.RESET_ALL}")
-    for idx, command in enumerate(cmd.available_commands(), start=1):
-        typer.echo(
-            f"{Fore.YELLOW}{idx}{Style.RESET_ALL} - {Fore.GREEN}{command}{Style.RESET_ALL}"
+    try:
+        start_new_project(
+            path,
+            name,
+            description,
         )
+    except Exception as e:
+        typer.echo(f"{Fore.RED}{e}{Style.RESET_ALL}")
+        raise typer.Exit(code=1)
+
         
 @app.command()
-def exec(
-    command: str = typer.Argument(..., help="Nome do comando"),
-    arg: str = typer.Option(None, help="Nome do índice"),
+def run(
+    info: str = typer.Option(
+        "",
+        help="Argumentos do comando",
+        callback=lambda value: process_multiple_arguments(value)
+    ),
+    command: str = typer.Option(..., help="Nome do comando"),
     parallel: int = typer.Option(1, help="Número de processos paralelos"),
 ):
     """
     Executa um comando
     """
     try:
-                
-        if command not in cmd.available_commands():
-            raise Exception(f"O comando {command} não existe")
+        if command not in available_commands(command):
+            typer.echo(
+                f"{Fore.YELLOW}Comando não encontrado: {Style.RESET_ALL}{Fore.RED}{command}{Style.RESET_ALL}\n"
+            )
+            available_commands()
+            raise typer.Exit(code=1)
         
         command = command.replace("-", "_")
-        cmd.exec_command(command, arg, parallel=parallel)
+        exec_command(
+            command,
+            info,
+            parallel,
+        )
         
     except Exception as e:
-        app.logger.error(e)
-        raise typer.Exit(code=config.exit_code.ERROR.value)
+        typer.echo(f"{Fore.RED}{e}{Style.RESET_ALL}")
+        raise typer.Exit(code=1)

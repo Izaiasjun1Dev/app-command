@@ -1,14 +1,36 @@
 from enum import Enum
+from logging import Logger
+from os import listdir
 from colorama import Fore, Style
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 from pydantic import Field, BaseModel
+
+from gspl.console.utils import fromcwd
 
 
 class Environment(str, Enum):
     DEVELOPMENT = "DEVELOPMENT"
     TESTING = "TESTING"
     PRODUCTION = "PRODUCTION"
+    
+class ExitCode(Enum):
+    SUCCESS = 0
+    ERROR = 1
+    FAILURE = 2
+    NOT_IMPLEMENTED = 3
+    NOT_FOUND = 4
+    INVALID_INPUT = 5
+    INVALID_OUTPUT = 6
+    INVALID_CONFIG = 7
+    INVALID_STATE = 8
+    INVALID_OPERATION = 9    
+    
+class AwsConfig(BaseModel):
+    aws_access_key_id: str = Field(default="teste")
+    aws_secret_access_key: str = Field(default="teste")
+    region: str = Field(default="us-east-1")
+    endpoint_url: str = Field(default="http://localhost:4566")
 
 class CmdConfig(BaseModel):
     commands_path: str = Field(default="commands")
@@ -26,25 +48,21 @@ class LoggerConfig(BaseModel):
         
         return self.format
     
-class ElasticConfig(BaseModel):
-    host: str = Field(default="localhost")
+class OpenElasticConfig(BaseModel):
+    host: str = Field(default="0.0.0.0")
     port: int = Field(default=9200)
     scheme: str = Field(default="http")
+    user: str = Field(default="admin")
+    password: str = Field(default="admin")
+    auth: tuple = Field(default=(user, password))
+    use_ssl: bool = Field(default=True)
+    verify_certs: bool = Field(default=False)
+    ssl_assert_hostname: bool = Field(default=False)
+    ssl_show_warn: bool = Field(default=False)
     
     def get_url(self):
         return f"{self.scheme}://{self.host}:{self.port}"
     
-class ExitCode(Enum):
-    SUCCESS = 0
-    ERROR = 1
-    FAILURE = 2
-    NOT_IMPLEMENTED = 3
-    NOT_FOUND = 4
-    INVALID_INPUT = 5
-    INVALID_OUTPUT = 6
-    INVALID_CONFIG = 7
-    INVALID_STATE = 8
-    INVALID_OPERATION = 9    
     
 class Application(BaseSettings):
     environment: Environment = Field(default=Environment.DEVELOPMENT)
@@ -52,8 +70,10 @@ class Application(BaseSettings):
     version: str = Field(default="0.0.1", env="APPLICATION_VERSION")
     cmd: CmdConfig = Field(default=CmdConfig())
     logger: LoggerConfig = Field(default=LoggerConfig())
-    elastic: ElasticConfig = Field(default=ElasticConfig())
+    open_elastic: OpenElasticConfig = Field(default=OpenElasticConfig())
     exit_code: ExitCode = Field(default=ExitCode.SUCCESS)
+    aws: AwsConfig = Field(default=AwsConfig())
+   
     
     class Config:
         env_file = ".env"

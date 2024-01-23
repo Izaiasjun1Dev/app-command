@@ -36,7 +36,7 @@ fi
 python -c "import gspl; print(gspl)"
 
 # Testar o script console
-question-console -h
+console -h
 
 # Limpar variáveis
 unset path_to_file

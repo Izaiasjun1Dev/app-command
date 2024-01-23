@@ -12,6 +12,9 @@ build = "*"
 colorama = "*"
 python-dotenv = "*"
 elasticsearch = "*"
+opensearch-dsl = "*"
+tqdm = "*"
+emoji = "*"
 
 [dev-packages]
 
